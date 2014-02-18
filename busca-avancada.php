@@ -64,18 +64,30 @@ class busca_avancada extends WP_Widget{
 
 		extract( $args );
 		// these are the widget options
-		$title = apply_filters('widget_title', $instance['title']);
-		$text = $instance['text'];
-		$textarea = $instance['textarea'];
+		if(isset($instance['title']))
+			$title = apply_filters('widget_title', $instance['title']);
+		if(isset($instance['text']))
+			$text = $instance['text'];
+		if(isset($instance['textarea']))
+			$textarea = $instance['textarea'];
 		echo '<div class="widget">';
 		echo '<h2>Busca Avançada</h2>';
 		// Display the widget
 		echo '<div class="widget-busca-avancada wp_widget_plugin_box"><form>';
-		echo '<input class="busca-texto" type="text" name="s" placeholder="digite aqui a sua busca" value="'.$_GET['s'].'">';
+		if(isset($_GET['s']))
+			echo '<input class="busca-texto" type="text" name="s" placeholder="digite aqui a sua busca" value="'.$_GET['s'].'">';
+		else
+			echo '<input class="busca-texto" type="text" name="s" placeholder="digite aqui a sua busca">';
 		echo '<div class="filtro-data">	';
 			echo '<h4>Filtrar por período</h4>';
-			echo '<input type="text" class="from" name="date-from" placeholder="data inicial" value="'.$_GET['date-from'].'">';
-			echo '<input type="text" class="to" name="date-to" placeholder="data final" value="'.$_GET['date-to'].'">';
+			if(isset($_GET['date-from']))
+				echo '<input type="text" class="from" name="date-from" placeholder="data inicial" value="'.$_GET['date-from'].'">';
+			else
+				echo '<input type="text" class="from" name="date-from" placeholder="data inicial">';
+			if(isset($_GET['date-to']))
+				echo '<input type="text" class="to" name="date-to" placeholder="data final" value="'.$_GET['date-to'].'">';
+			else
+				echo '<input type="text" class="to" name="date-to" placeholder="data final">';
 		echo '</div>';
 		echo '<div class="clear"></div>';
 		echo '<div class="filtro-categorias">';
@@ -125,14 +137,18 @@ function SearchFilter($query) {
 if(!is_admin())
 	add_filter('pre_get_posts','SearchFilter');
 
-function apply_search_filters( $search_query) {	
+function apply_search_filters($search_query) {	
 	if(is_search()):
-		$date_from = $_GET['date-from'];
-		$date_to = $_GET['date-to'];
-		if(isset($date_from) && $date_from != '')
+		if(isset($_GET['date-from']) && $_GET['date-from'] != ''):
+			$date_from = $_GET['date-from'];
 			$search_query .= " AND (wp_posts.post_date >= '".$date_from." 00:00:00')"; 
-		if($date_to != '' && isset($date_to))
+		endif;
+		if(isset($_GET['date-to']) && $_GET['date-to'] != ''):
+			$date_to = $_GET['date-to'];
 			$search_query .= " AND (wp_posts.post_date <= '".$date_to." 23:59:59') ";
+		endif;
+		return $search_query;
+	else:
 		return $search_query;
 	endif;
 
@@ -147,8 +163,8 @@ function exclude_taxonomies($query){
 					$taxonomy_list = get_terms($taxonomy);
 					if(!empty($taxonomy_list)):
 						$taxonomy_query = 'selected-'.$taxonomy;
-						$array_taxonomies = $_GET[$taxonomy_query];
-						if(isset($array_taxonomies) && $array_taxonomies != ''):
+						if(isset($_GET[$taxonomy_query]) && $_GET[$taxonomy_query] != ''):
+								$array_taxonomies = $_GET[$taxonomy_query];
 								$len = count($array_taxonomies);
 								$i=0;
 								$lista_taxonomias = '';
@@ -174,13 +190,13 @@ if(!is_admin())
 	add_action( 'pre_get_posts', 'exclude_taxonomies' );
 
 	function enqueue_scripts(){
-		wp_enqueue_style('jquery-ui-1.10.3-custom',plugins_url() . '/BuscaAvancada/css/jquery-ui-1.10.3.custom.min.css',false,PLUGIN_VERSION,false);
-		wp_enqueue_style('theme-style',plugins_url() . '/BuscaAvancada/css/style.css',false,PLUGIN_VERSION,false);
+		wp_enqueue_style('jquery-ui-1.10.3-custom',plugins_url() . '/BuscaAvancada/css/jquery-ui-1.10.3.custom.min.css',false,false,false);
+		wp_enqueue_style('theme-style',plugins_url() . '/BuscaAvancada/css/style.css',false,false,false);
 		wp_enqueue_script('jquery');
 		wp_enqueue_script('jquery-ui-core');  
 		wp_enqueue_script('jquery-ui-datepicker');
 		wp_enqueue_script('jquery-ui-accordion');
-		wp_enqueue_script('scripts-busca-avancada',plugins_url() . '/BuscaAvancada/js/scripts.js',array('jquery','jquery-ui-core','jquery-ui-datepicker'),PLUGIN_VERSION,false);
+		wp_enqueue_script('scripts-busca-avancada',plugins_url() . '/BuscaAvancada/js/scripts.js',array('jquery','jquery-ui-core','jquery-ui-datepicker'),false,false);
 	}
 	if(!is_admin())
 	add_action( 'wp_enqueue_scripts', 'enqueue_scripts' );
